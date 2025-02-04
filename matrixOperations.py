@@ -17,7 +17,7 @@ def Transpose(A):
         n = len(A)  # num rows
         m=len(A[0]) #num cols
         if m==1:  # a column vector
-            return [x[0] for x in A]  # returns a row vector
+            return [[x[0] for x in A]]  # returns a row vector
         AT = [[A[j][i] for j in range(n)] for i in range(m)]
         return AT
     else:  # for a row vector

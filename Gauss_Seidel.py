@@ -1,4 +1,5 @@
 import copy
+import matrixOperations as mo
 
 def GaussSeidel(Aaug, x, Niter=15, epsilon=1e-5):
     '''
@@ -63,6 +64,7 @@ def separateAugmented(Aaug):
     n=len(A[0])-1
     for r in A:
         b.append(r.pop(n))
+    b=mo.makeColumnVector(b)
     return (A,b)
 
 def checkMatrixSoln(A, x, augmented=True):
