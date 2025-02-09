@@ -1,3 +1,4 @@
+#Utilized ChatGPT for code debugging after adding in Secant method call, built off hw2a.py program provided by Dr.Smay
 #region imports
 from numericalMethods import GPDF, Probability, Secant #imports functions from numerical methods to be called and used.
 #endregion
