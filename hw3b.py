@@ -1,23 +1,47 @@
 #Utilized ChatGPT to build on code base and modify callback to compare to table.
 #import region
 """imports call functions to use to calculate the probabilities and arguments"""
-import scipy.integrate as spi
-import scipy.special as sp
-import numpy as np
+import math
+import numericalMethods as nm
 #endregion
 
-def gamma_function(alpha):
+def gamma(alpha):
     """Computes the Gamma function using numerical integration."""
-    integral, _ = spi.quad(lambda t: np.exp(-t) * t ** (alpha - 1), 0, np.inf)
-    return integral
+    gam = math.gamma(alpha)
+    def fn(args):
+        t,a=args[0],args[1]
+        return math.exp(-t)*math.pow(t,a-1)
 
+    if(alpha % 1 == 0): # we have an integer and can compute an exact answer
+        g = 1
+        for i in range(1, int(alpha)):
+             g *= i
+        gg = nm.Simpson(fn, (alpha, 0, 0, 50), 100000)  # these numbers give values similar to Table A2
+        return g
+    g=nm.Simpson(fn,(alpha,0,0,50),100000) # these numbers give values similar to Table A2
+    return g
+def km(m):
+    """
+    compute K_m for t-distribution
+    :param m: degrees of freedom
+    :return: k_m
+    """
+    k_m = gamma(0.5*m+0.5)/(math.sqrt(m*math.pi)*gamma(0.5*m))
+    return k_m
 
-def compute_F(z, m):
-    """Computes F(z) using numerical integration."""
-    Km = sp.gamma(0.5 * (m + 1)) / (np.sqrt(m * np.pi) * sp.gamma(0.5 * m))
-    integral, _ = spi.quad(lambda u: (1 + u ** 2 / m) ** (-(m + 1) / 2), -np.inf, z)
-    return Km * integral
+def compute_F(args):
 
+    m,uL=args  # unpack args
+    k_m=km(m)
+    def tPDF(args):
+        x,m=args[0],args[1] # from Simpson, args is 4 elements long.  Just need first two.
+        base = 1+(x**2)/m
+        epnt =  -(m+1)/2
+        return base**epnt
+        # return math.pow(base,epnt)
+    # the following calls the Simpson integration function with required args tuple
+    I=nm.Simpson(tPDF,(m,0,-5.0,uL),1000)
+    return k_m*I
 
 # Table A9 stored as a dictionary with (m, z) as keys
 t_table = {
@@ -55,13 +79,14 @@ def find_closest_table_value(m, computed_F):
 def main():
     while True:
         try:
-            m = int(input("Enter degrees of freedom (m): "))
-            z = float(input("Enter z value: "))
-
-            computed_F = compute_F(z, m)
+            m = input("Enter degrees of freedom (m): ")
+            m = int(m)
+            u = input("Enter u value: ")
+            u = float(u)
+            computed_F = compute_F((m,u))
             closest_Fz, table_z = find_closest_table_value(m, computed_F)
 
-            print(f"Computed F(z) for m={m}, z={z}: {computed_F:.5f}")
+            print(f"Computed F(z) for m={m}, z={u}: {computed_F:.5f}")
             if closest_Fz is not None:
                 print(f"Closest Table Value: F({closest_Fz}) = {table_z}")
             else:
